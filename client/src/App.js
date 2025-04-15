@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import Web3Modal from "web3modal";
 import contractABI from "./NumberGuessingGame.json";
 
-const CONTRACT_ADDRESS = "0x4B331fc149eA04eDe5FB31C69409f0444b9D8490";
+const CONTRACT_ADDRESS = "0x1e4C71616D9d69538d325B2673d110940D1F359C";
 
 function App() {
   const [provider, setProvider] = useState(null);
@@ -23,7 +23,7 @@ function App() {
 
   const connectWallet = useCallback(async () => {
     if (!window.ethereum) {
-      setMessage("Metamask belum terpasang!");
+      setMessage("Metamask is not installed!");
       return;
     }
 
@@ -40,8 +40,8 @@ function App() {
       setAccount(accounts[0].address);
       setMessage("");
     } catch (error) {
-      console.error("Error koneksi:", error);
-      setMessage("Gagal menghubungkan dompet");
+      console.error("Connection error:", error);
+      setMessage("Failed to connect wallet");
     }
   }, []);
 
@@ -51,35 +51,35 @@ function App() {
         const balance = await contract.getContractBalance();
         setPrizePool(ethers.formatEther(balance));
       } catch (error) {
-        console.error("Error mengambil prize pool:", error);
+        console.error("Error fetching prize pool:", error);
       }
     }
   }, [contract]);
 
   const playGame = useCallback(async () => {
     if (!guess || guess < 1 || guess > 10) {
-      setMessage("Masukkan angka antara 1-10");
+      setMessage("Enter a number between 1 and 10");
       return;
     }
 
     if (!contract) {
-      setMessage("Kontrak belum siap");
+      setMessage("Contract is not ready");
       return;
     }
 
     try {
       setIsLoading(true);
-      setMessage("Mengirim transaksi...");
+      setMessage("Sending transaction...");
       const tx = await contract.play(BigInt(guess), {
-        value: ethers.parseEther("0.01"),
+        value: ethers.parseEther("0.001"),
       });
 
       await tx.wait();
-      setMessage("Transaksi selesai! Menyegarkan hasil...");
+      setMessage("Transaction completed! Refreshing result...");
       await refreshPrizePool();
       await fetchLastResult();
     } catch (error) {
-      console.error("Error bermain:", error);
+      console.error("Play error:", error);
       setMessage("Error: " + (error.reason || error.message));
     } finally {
       setIsLoading(false);
@@ -96,7 +96,7 @@ function App() {
       const prize = ethers.formatEther(result[2]);
       setLastResult({ won, guess, prize });
     } catch (error) {
-      console.error("Gagal mengambil hasil terakhir:", error);
+      console.error("Failed to fetch last result:", error);
     }
   }, [contract, account]);
 
@@ -109,25 +109,25 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold mb-6">Game Tebak Angka</h1>
+      <h1 className="text-3xl font-bold mb-6">Number Guessing Game</h1>
 
       {!account ? (
         <button
           onClick={connectWallet}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
-          Hubungkan Dompet
+          Connect Wallet
         </button>
       ) : (
         <div className="w-full max-w-md bg-white p-6 rounded shadow">
-          <p className="mb-4">Terhubung: {account.slice(0, 6)}...{account.slice(-4)}</p>
-          <p className="mb-4">Dana Hadiah: {prizePool} TEA</p>
+          <p className="mb-4">Connected: {account.slice(0, 6)}...{account.slice(-4)}</p>
+          <p className="mb-4">Prize Pool: {prizePool} TEA</p>
 
           <input
             type="number"
             value={guess}
             onChange={(e) => setGuess(e.target.value)}
-            placeholder="Tebak (1-10)"
+            placeholder="Guess (1-10)"
             className="w-full p-2 mb-4 border rounded"
             min="1"
             max="10"
@@ -138,23 +138,23 @@ function App() {
             className={`w-full text-white p-2 rounded ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
             disabled={isLoading}
           >
-            {isLoading ? "Memproses..." : "Main (0.01 TEA)"}
+            {isLoading ? "Processing..." : "Play (0.001 TEA)"}
           </button>
 
           <button
             onClick={fetchLastResult}
             className="w-full mt-3 bg-indigo-500 text-white p-2 rounded hover:bg-indigo-600"
           >
-            Lihat Hasil Terakhir
+            View Last Result
           </button>
 
           {message && <p className="mt-4 text-center">{message}</p>}
 
           {lastResult && (
             <div className="mt-4 p-4 bg-gray-50 border rounded text-center">
-              <p className="font-semibold">Hasil Terakhir:</p>
-              <p>Tebakan: {lastResult.guess}</p>
-              <p>{lastResult.won ? `Menang! +${lastResult.prize} TEA 🎉` : "Kalah 😢"}</p>
+              <p className="font-semibold">Last Result:</p>
+              <p>Your Guess: {lastResult.guess}</p>
+              <p>{lastResult.won ? `You Won! +${lastResult.prize} TEA 🎉` : "You Lost 😢"}</p>
             </div>
           )}
         </div>

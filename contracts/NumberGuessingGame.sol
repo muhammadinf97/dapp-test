@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NumberGuessingGame is Ownable {
     uint256 public constant MIN_GUESS = 1;
     uint256 public constant MAX_GUESS = 10;
-    uint256 public constant BET_AMOUNT = 0.01 ether;
+    uint256 public constant BET_AMOUNT = 0.001 ether;
     uint256 private secretNumber;
     uint256 public prizePool;
 
@@ -26,9 +26,9 @@ contract NumberGuessingGame is Ownable {
     }
 
     function play(uint256 _guess) external payable {
-        require(_guess >= MIN_GUESS && _guess <= MAX_GUESS, "Tebakan harus antara 1-10");
-        require(msg.value == BET_AMOUNT, "Jumlah taruhan salah");
-        require(prizePool >= BET_AMOUNT * 2, "Dana hadiah tidak cukup");
+        require(_guess >= MIN_GUESS && _guess <= MAX_GUESS, "Guess must be between 1 and 10");
+        require(msg.value == BET_AMOUNT, "Incorrect bet amount");
+        require(prizePool >= BET_AMOUNT * 2, "Insufficient prize pool");
 
         prizePool += msg.value;
         bool won = _guess == secretNumber;
@@ -41,7 +41,7 @@ contract NumberGuessingGame is Ownable {
             _resetSecretNumber();
         }
 
-        // Simpan hasil permainan terakhir untuk player ini
+        // Store the latest game result for this player
         results[msg.sender] = GameResult(won, _guess, prize);
 
         emit GamePlayed(msg.sender, _guess, won, prize);

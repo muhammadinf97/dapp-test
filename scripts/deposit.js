@@ -1,8 +1,8 @@
 const hre = require("hardhat");
 
 async function main() {
-  const CONTRACT_ADDRESS = "0x4B331fc149eA04eDe5FB31C69409f0444b9D8490"; // Alamat kontrak Anda
-  const depositAmount = hre.ethers.parseEther("1"); // Deposit 1 TEA
+  const CONTRACT_ADDRESS = "0x1e4C71616D9d69538d325B2673d110940D1F359C"; // Alamat kontrak Anda
+  const depositAmount = hre.ethers.parseEther("0.1"); // Deposit 1 TEA
 
   const [deployer] = await hre.ethers.getSigners();
   const contract = await hre.ethers.getContractAt("NumberGuessingGame", CONTRACT_ADDRESS, deployer);
